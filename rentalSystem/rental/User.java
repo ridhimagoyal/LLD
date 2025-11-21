@@ -7,7 +7,7 @@ public class User {
     private final int id;
     private final String name;
     private final String email;
-    private List<Reservation> reservations;
+    private final List<Reservation> reservations;
 
     public User(int id, String name, String email) {
         this.id = id;
@@ -16,12 +16,27 @@ public class User {
         this.reservations = new ArrayList<>();
     }
 
+    public void getReservationList() {
+        System.out.println( "The reservations of user :  " + name + " id : " + id );
+        for ( Reservation r : reservations ) {
+            System.out.println( r.getId() );
+        }
+    }
+
     public void addReservation(Reservation reservation) {
         reservations.add(reservation);
     }
 
     public void deleteReservation(Reservation reservation) {
         reservations.remove(reservation);
+    }
+
+    public String getName() {
+        return name ;
+    }
+
+    public String getEmail() {
+        return email ;
     }
 
     public int getId() {

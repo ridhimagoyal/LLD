@@ -9,15 +9,13 @@ import rental.vehicleFactory.*;
 public class RentalSystem {
     private static RentalSystem instance;
     private final List<RentalStore> stores;
-    private VehicleFactory vehicleFactory; // optional
     private ReservationManager reservationManager;
     // paymentProcessor omitted for brevity / assumed implemented elsewhere
-    private Map<Integer, User> users;
+    private final Map<Integer, User> users;
     private int nextUserId;
 
     private RentalSystem() {
         this.stores = new ArrayList<>();
-        this.vehicleFactory = new VehicleFactory();
         this.reservationManager = new ReservationManager();
         this.users = new HashMap<>();
         this.nextUserId = 1;

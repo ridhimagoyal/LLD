@@ -11,8 +11,8 @@ public final class Reservation {
     private final int id;
     private final User user;
     private final Vehicle vehicle;
-    private Date start;
-    private Date end;
+    private final Date start;
+    private final Date end;
 
     private RentalStore pickupRentalStore;
     private RentalStore returnRentalStore;
@@ -123,11 +123,19 @@ public final class Reservation {
         this.pickupRentalStore = pickupRentalStore;
     }
 
+    public void setReturnRentalStore( RentalStore returnRentalStore ) {
+        this.returnRentalStore = returnRentalStore ;
+    }
+
     public RentalStore getPickupRentalStore() {
         return pickupRentalStore;
     }
 
     public RentalStore getReturnRentalStore() {
         return returnRentalStore;
+    }
+
+    public User getUser() {
+        return user;
     }
 }
