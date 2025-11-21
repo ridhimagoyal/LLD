@@ -13,82 +13,123 @@ public class Main {
 
     public static void main(String[] args) {
         
-    
+// ----------------------------
+        // SYSTEM INITIALIZATION
+        // ----------------------------
         RentalSystem rentalSystem = RentalSystem.getInstance();
 
-        // Create rental stores
-        RentalStore store1 = new RentalStore(
-            1, "Downtown Rentals", new Location("123 Main St", "New York", "NY", "10001"));
-        RentalStore store2 = new RentalStore(
-            2, "Airport Rentals", new Location("456 Airport Rd", "Los Angeles", "CA", "90045"));
+        // Create stores
+        RentalStore store1 = new RentalStore(1, "Delhi Store",
+                new Location("New Delhi", "Delhi", "India", "001"));
+        RentalStore store2 = new RentalStore(2, "Mumbai Store",
+                new Location("Mumbai", "Maharashtra", "India", "002" ));
+
         rentalSystem.addStore(store1);
         rentalSystem.addStore(store2);
 
-        // Create vehicles using Factory Pattern
-        Vehicle economyCar = VehicleFactory.createVehicle("EC001", "Toyota" ,
-            VehicleType.SUV,   50.0);
-        Vehicle luxuryCar = VehicleFactory.createVehicle(  "LX001", "Mercedes",
-            VehicleType.LUXURY, 200.0);
-        Vehicle suvCar = VehicleFactory.createVehicle("SV001", "Honda", 
-            VehicleType.SUV,  75.0);
 
-        // Add vehicles to stores
-        store1.addVehicle(economyCar);
-        store1.addVehicle(luxuryCar);
-        store2.addVehicle(suvCar);
+        // ----------------------------
+        // ADD VEHICLES USING FACTORY
+        // ----------------------------
+        Vehicle v1 = VehicleFactory.createVehicle(
+                "DL01AB1234",
+                "Tata Nexon",
+                VehicleType.SUV,
+                2500
+        );
 
-         // Register user
-        User user1 = new User(123, "ABC" , "abc@gmail.com");
-        User user2 = new User(345 , "BCD" , "bcd@yahoo.com");
+        Vehicle v2 = VehicleFactory.createVehicle(
+                "DL02CD5678",
+                "Honda City",
+                VehicleType.LUXURY,
+                3000
+        );
+
+        Vehicle v3 = VehicleFactory.createVehicle(
+                "DL05MN1111",
+                "Royal Enfield",
+                VehicleType.BIKE,
+                800
+        );
+
+        store1.addVehicle(v1);
+        store1.addVehicle(v2);
+        store1.addVehicle(v3);
 
 
-        rentalSystem.registerUser(user1);
-        rentalSystem.registerUser(user2);
+        // ----------------------------
+        // CREATE USER
+        // ----------------------------
+        int userId = rentalSystem.createUser("Ridhima", "ridhima@example.com");
+        User user = rentalSystem.getUser(userId);
 
-        // Create reservations
-        Reservation reservation1 = rentalSystem.createReservation(user1.getId(), economyCar.getRegistrationNumber(),
-                        store1.getId(), store1.getId(), new Date(20, 4, 2025),
-                new Date(20, 5, 2025));
 
-        // Process payment using different strategies (Strategy Pattern)
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("nProcessing payment for reservation #" + reservation1.getId());
-        System.out.println("Total amount: $" + reservation1.getTotalAmount());
-        System.out.println("Select payment method:");
-        System.out.println("1. Credit Card");
-        System.out.println("2. Cash") ;
+        // ----------------------------
+        // CHECK VEHICLE AVAILABILITY
+        // ----------------------------
+        Date start = new Date(21, 11, 2025);
+        Date end = new Date(25, 11, 2025);
 
-        int choice = scanner.nextInt();
-        PaymentStrategy paymentStrategy;
-        switch (choice) {
-            case 1:
-                paymentStrategy = new CreditCardPayment();
-                break;
-            case 2:
-                paymentStrategy = new CashPayment();
-                break;
-            default:
-                System.out.println("Invalid choice! Defaulting to credit card payment.");
-                paymentStrategy = new CreditCardPayment();
-                break;
+        System.out.println("\nAvailable vehicles between dates:");
+        for (Vehicle av : store1.getAvailableVehicles(start, end)) {
+            System.out.println(" → " + av.getRegistrationNumber() + " : " + av.getModel());
         }
 
 
-        boolean paymentSuccess = rentalSystem.processPayment(reservation1.getId(), paymentStrategy);
-        if (paymentSuccess) {
-            System.out.println("Payment successful!");
+        // ----------------------------
+        // CREATE RESERVATION
+        // ----------------------------
+        Reservation reservation = rentalSystem.createReservation(
+                userId,
+                "DL01AB1234",
+                1,
+                2,
+                start,
+                end
+        );
 
-            // Start the rental
-            rentalSystem.startRental(reservation1.getId());
-
-            // Simulate rental period
-            System.out.println("Simulating rental period...");
-
-            // Complete the rental
-            rentalSystem.completeRental(reservation1.getId());
-        } else {
-            System.out.println("Payment failed!");
+        if (reservation != null) {
+            System.out.println("\nReservation Created ID: " + reservation.getId());
+            System.out.println("Total Amount: Rs. " + reservation.getTotalAmount());
         }
+
+
+        // ----------------------------
+        // CONFIRM RESERVATION
+        // ----------------------------
+        rentalSystem.getReservationManager().confirmReservation(reservation.getId());
+        System.out.println("Reservation Confirmed.");
+
+
+        // ----------------------------
+        // START RENTAL
+        // ----------------------------
+        rentalSystem.getReservationManager().startRental(reservation.getId());
+        System.out.println("Rental Started. Vehicle is now out of the store.");
+
+
+        // ----------------------------
+        // COMPLETE RENTAL
+        // ----------------------------
+        rentalSystem.getReservationManager().completeRental(reservation.getId());
+        System.out.println("Rental Completed. Vehicle returned to return store.");
+
+
+
+        // ----------------------------
+        // FINAL CHECK: STORE INVENTORY
+        // ----------------------------
+        System.out.println("\nVehicles now at Delhi Store: ");
+        for (Vehicle v : store1.getAvailableVehicles(start, end)) {
+            System.out.println(" Delhi Store :  " + v.getRegistrationNumber());
+        }
+
+        System.out.println("\nVehicles now at Mumbai Store: ");
+        for (Vehicle v : store2.getAvailableVehicles(start, end)) {
+            System.out.println(" Mumbai Store :" + v.getRegistrationNumber());
+        }
+
+    
     }
 
 }
