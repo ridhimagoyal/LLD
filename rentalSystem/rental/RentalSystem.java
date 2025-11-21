@@ -1,15 +1,17 @@
 package rental;
 
-import java.util.* ;
-import rental.vehicleFactory.* ;
-import rental.paymentStrategy.* ;
+import java.util.*;
+import rental.vehicleFactory.*;
 
+/**
+ * RentalSystem singleton coordinates stores, users, reservation manager.
+ */
 public class RentalSystem {
     private static RentalSystem instance;
     private final List<RentalStore> stores;
-    private VehicleFactory vehicleFactory;
+    private VehicleFactory vehicleFactory; // optional
     private ReservationManager reservationManager;
-    private PaymentProcessor paymentProcessor;
+    // paymentProcessor omitted for brevity / assumed implemented elsewhere
     private Map<Integer, User> users;
     private int nextUserId;
 
@@ -17,7 +19,6 @@ public class RentalSystem {
         this.stores = new ArrayList<>();
         this.vehicleFactory = new VehicleFactory();
         this.reservationManager = new ReservationManager();
-        this.paymentProcessor = new PaymentProcessor();
         this.users = new HashMap<>();
         this.nextUserId = 1;
     }
@@ -50,31 +51,45 @@ public class RentalSystem {
         return users.get(userId);
     }
 
+    // returns created user id
+    public int createUser(String name, String email) {
+        int userId = nextUserId++;
+        User user = new User(userId, name, email);
+        users.put(userId, user);
+        return userId;
+    }
+
+    // convenience: register existing user object (keeps existing id)
+    public void registerUser(User user) {
+        int userID = user.getId();
+        if (users.containsKey(userID)) {
+            System.out.println("User with id : " + userID + " Already exists in the system");
+            return;
+        }
+        users.put(userID, user);
+    }
+
     public Reservation createReservation(int userId, String vehicleRegistration,
         int pickupStoreId, int returnStoreId, Date startDate, Date endDate) {
+
         User user = users.get(userId);
         RentalStore pickupStore = getStore(pickupStoreId);
         RentalStore returnStore = getStore(returnStoreId);
-        Vehicle vehicle = (pickupStore != null) ? pickupStore.getVehicle(vehicleRegistration): null;
+        Vehicle vehicle = (pickupStore != null) ? pickupStore.getVehicle(vehicleRegistration) : null;
 
         if (user != null && pickupStore != null && returnStore != null && vehicle != null) {
-            return reservationManager.createReservation(
-                user, vehicle, pickupStore, returnStore, startDate, endDate);
+            return reservationManager.createReservation(user, vehicle, pickupStore, returnStore, startDate, endDate);
         }
+        System.out.println("Invalid createReservation input");
         return null;
     }
 
-    public boolean processPayment(
-        int reservationId, PaymentStrategy paymentStrategy) {
-        Reservation reservation =
-            reservationManager.getReservation(reservationId);
+    public boolean processPayment(int reservationId /*, PaymentStrategy strategy */) {
+        Reservation reservation = reservationManager.getReservation(reservationId);
         if (reservation != null) {
-            boolean result = paymentProcessor.processPayment(
-                reservation.getTotalAmount(), paymentStrategy);
-            if (result) {
-                reservationManager.confirmReservation(reservationId);
-                return true;
-            }
+            // assume payment done externally and success
+            reservationManager.confirmReservation(reservationId);
+            return true;
         }
         return false;
     }
@@ -91,12 +106,7 @@ public class RentalSystem {
         reservationManager.cancelReservation(reservationId);
     }
 
-    public void registerUser(User user){
-        int userID = user.getId();
-        if(users.containsKey(userID)){
-            System.out.println("User with id : " + userID + "Already exists in the system");
-            return;
-        }
-        users.put(userID , user);
+    public ReservationManager getReservationManager() {
+        return reservationManager;
     }
 }
